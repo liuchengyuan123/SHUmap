@@ -9,33 +9,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
     public class test : MonoBehaviour
     {
         private ThirdPersonCharacter m_Character;
-        private Transform m_Cam;                  // A reference to the main camera in the scenes transform
-        private Vector3 m_CamForward;             // The current forward direction of the camera
-        private Vector3 m_Move;
-        /*
-        // Use this for initialization
-        void Start()
-        {
-            
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-        */
+        private bool moving;
+        Vector3 dir;
         public GameObject obj;
-        public GameObject sign;
-        public int p_tot;
-        public GameObject[] fjw = new GameObject[250];
+        int p_tot;
+        GameObject[] fjw = new GameObject[250];
         // Use this for initialization
         void Start()
         {
+            m_Character = FindObjectOfType<ThirdPersonCharacter>();
             p_tot = 0;
             read_from_file();
             Debug.Log(p_tot);
-            m_Character = GetComponent<ThirdPersonCharacter>();
+            dir = m_Character.transform.position;
+            moving = false;
         }
 
         float distance(Vector3 p1, Vector3 p2)
@@ -58,6 +45,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         // Update is called once per frame
         void Update()
         {
+            /*
+            Vector3 cur = m_Character.transform.position;
+            Debug.Log(cur);
+            if (distance(cur, new Vector3(0.0f, 0.0f, 0.0f)) > 0.1f)
+            {
+                dir = cur / distance(cur, new Vector3(0.0f, 0.0f, 0.0f));
+                m_Character.Move(-dir * 2f, false, false);
+            }
+            */
             if (Input.GetMouseButtonDown(0))
             {
                 RaycastHit hitt = new RaycastHit();
@@ -67,13 +63,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 int id = find_closest(pos);
                 //Instantiate(sign, fjw[id], Quaternion.identity);
                 Debug.Log(fjw[id].transform.position);
-                Vector3 cur = m_Character.transform.position;
-                Vector3 dir = fjw[id].transform.position - cur;
-                while (distance(m_Character.transform.position, fjw[id].transform.position) > 0.001)
-                {
-                    m_Character.Move(dir, false, false);
-                }
+                dir = fjw[id].transform.position;
+                moving = true;
             }
+            Vector3 cur = m_Character.transform.position;
+            if (moving && distance(dir, cur) > 0.1f)
+            {
+                Vector3 to = dir - cur;
+                to /= distance(to, new Vector3(0f, 0f, 0f));
+                Vector3 sp = to * 2.5f;
+                m_Character.Move(sp, false, false);
+            }
+            else
+                moving = false;
         }
 
         void read_from_file()
